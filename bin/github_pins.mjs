@@ -12,6 +12,7 @@
 // Usage:
 //   node bin/github_pins.mjs --http http://[::1]:9333 --user <login> --login-check
 //   node bin/github_pins.mjs --http http://[::1]:9333 --user <login> --pin repo-a,repo-b,repo-c
+//   node bin/github_pins.mjs --http http://[::1]:9333 --user <login> --unpin repo-a
 //
 // VERIFY AFTER (never trust page text — your own pinned README contains the
 // repo names and will false-positive any DOM-based check):
@@ -61,9 +62,10 @@ if (args['login-check']) {
   process.exit(0);
 }
 
-const targets = String(args.pin || '').split(',').map(s => s.trim()).filter(Boolean);
+const targets = String(args.pin || args.unpin || '').split(',').map(s => s.trim()).filter(Boolean);
+const unpin = Boolean(args.unpin);
 if (!targets.length) {
-  console.error('--pin expects a comma-separated repo list');
+  console.error('--pin or --unpin expects a comma-separated repo list');
   await browser.close();
   process.exit(2);
 }
@@ -73,7 +75,8 @@ if (!targets.length) {
 await page.locator('button:has-text("Customize your pins"), a:has-text("Customize your pins")').first().click({ timeout: 10000 });
 await page.waitForTimeout(2000);
 
-const result = await page.evaluate((targets) => {
+const result = await page.evaluate((opts) => {
+  const { targets, unpin } = opts;
   const modal = [...document.querySelectorAll('dialog.Overlay')].find(d => d.innerText.includes('Save pins'));
   if (!modal) return { error: 'pin dialog not found (dialog.Overlay with Save pins)' };
   const out = [];
@@ -82,11 +85,16 @@ const result = await page.evaluate((targets) => {
     const text = root ? root.innerText : '';
     const hit = targets.find(t => text.toLowerCase().includes(t.toLowerCase()));
     if (!hit) continue;
-    if (!cb.checked) { cb.click(); out.push(`checked ${hit}`); }
-    else out.push(`already ${hit}`);
+    if (unpin) {
+      if (cb.checked) { cb.click(); out.push(`unchecked ${hit}`); }
+      else out.push(`already unpinned ${hit}`);
+    } else {
+      if (!cb.checked) { cb.click(); out.push(`checked ${hit}`); }
+      else out.push(`already ${hit}`);
+    }
   }
   return { actions: out };
-}, targets);
+}, { targets, unpin });
 
 if (result.error) {
   console.log(JSON.stringify(result, null, 2));
@@ -98,5 +106,5 @@ if (result.error) {
 await page.locator('button.js-pinned-items-submit').first().click({ timeout: 10000 });
 await page.waitForTimeout(2500);
 
-console.log(JSON.stringify({ user: login, pinned: targets, actions: result.actions, verifyWith: `gh api graphql -f query='{ user(login:"${login}") { pinnedItems(first:6, types:REPOSITORY) { totalCount nodes { ... on Repository { name } } } } }'` }, null, 2));
+console.log(JSON.stringify({ user: login, action: unpin ? 'unpin' : 'pin', repos: targets, actions: result.actions, verifyWith: `gh api graphql -f query='{ user(login:"${login}") { pinnedItems(first:6, types:REPOSITORY) { totalCount nodes { ... on Repository { name } } } } }'` }, null, 2));
 await browser.close();

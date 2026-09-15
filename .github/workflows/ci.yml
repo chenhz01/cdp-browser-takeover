@@ -32,6 +32,7 @@ jobs:
         run: |
           node --check bin/cdp_launch.mjs
           node --check bin/cdp_probe.mjs
+          node --check bin/cdp_eval.mjs
           node --check bin/github_pins.mjs
           node --check tests/smoke.mjs
 

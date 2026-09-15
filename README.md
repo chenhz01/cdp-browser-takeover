@@ -24,9 +24,13 @@ This toolkit is the distilled escape path:
    loopbacks (`[::1]` and `127.0.0.1`), and prints the real endpoint as JSON.
 2. **Probe** any port to see what's actually listening — `bin/cdp_probe.mjs`
    (stdlib-only), so you never knock on the wrong loopback again.
-3. **Operate** the web UI with Playwright-over-CDP — `bin/github_pins.mjs`
-   automates GitHub's pin dialog end-to-end (`--login-check` mode for a safe
-   dry run). Playwright-core is the repo's **single optional dependency**.
+3. **Operate** the web UI — `bin/github_pins.mjs` automates GitHub's pin
+   dialog end-to-end (`--pin` / `--unpin` / `--login-check` dry-run) with
+   Playwright over CDP. Playwright-core is the repo's **single optional
+   dependency**.
+4. **Evaluate JS in any tab with zero dependencies** — `bin/cdp_eval.mjs`
+   speaks raw CDP over the Node global WebSocket (needs Node ≥ 21).
+   `--new` opens a fresh tab; `--url <substring>` targets an existing one.
 
 Every trap discovered along the way — daemon death, IPv6-vs-IPv4 loopback
 squatting, GitHub's custom `<dialog class="Overlay">` modals, and
@@ -46,8 +50,12 @@ node bin/cdp_probe.mjs 9333 --targets
 npm i playwright-core   # one-time, only needed for step 3
 node bin/github_pins.mjs --http http://[::1]:9333 --user <login> --login-check
 
-# 3b. pin repositories (you are already logged in inside that browser window)
+# 3b. pin / unpin repositories (you are already logged in inside that browser window)
 node bin/github_pins.mjs --http http://[::1]:9333 --user <login> --pin repo-a,repo-b
+node bin/github_pins.mjs --http http://[::1]:9333 --user <login> --unpin repo-a
+
+# 3c. evaluate JS in a tab — no playwright, pure stdlib (Node >= 21)
+node bin/cdp_eval.mjs --http http://[::1]:9333 --url github.com --eval "document.title"
 
 # 4. VERIFY — always, via the API, never via page text
 gh api graphql -f query='{ user(login:"<login>") { pinnedItems(first:6, types:REPOSITORY) { totalCount nodes { ... on Repository { name } } } } }'
