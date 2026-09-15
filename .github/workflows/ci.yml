@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: 18
+          - os: ubuntu-latest
+            node: 20
+          - os: ubuntu-latest
+            node: 22
+          - os: windows-latest
+            node: 22
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Syntax check all scripts
+        run: |
+          node --check bin/cdp_launch.mjs
+          node --check bin/cdp_probe.mjs
+          node --check bin/github_pins.mjs
+          node --check tests/smoke.mjs
+
+      - name: Smoke test — launch real Chrome, probe CDP endpoint
+        run: node tests/smoke.mjs

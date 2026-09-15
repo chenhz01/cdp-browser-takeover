@@ -1,8 +1,13 @@
 # cdp-browser-takeover
 
+![CI](https://github.com/chenhz01/cdp-browser-takeover/actions/workflows/ci.yml/badge.svg)
+
 > Drive a real browser through the Chrome DevTools Protocol when the official
 > API doesn't exist and your automation wrapper's daemon won't start.
 > **Zero dependencies at the core** — Node ≥ 18 stdlib only.
+
+CI launches a real Chrome and probes the CDP endpoint on every push
+(Node 18 / 20 / 22 on Linux, Node 22 on Windows) via `tests/smoke.mjs`.
 
 ## Why this exists
 
