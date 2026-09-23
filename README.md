@@ -1,5 +1,23 @@
 # cdp-browser-takeover
 
+> **Automate your real logged-in browser when every API says no**
+
+
+
+## Install (one line)
+```bash
+见仓内说明
+```
+
+## Why not X?
+（见下方原文档）
+
+Topics: `cdp` · `browser-automation` · `chromium` · `scraping` · `traps`
+
+---
+
+# cdp-browser-takeover
+
 ![CI](https://github.com/chenhz01/cdp-browser-takeover/actions/workflows/ci.yml/badge.svg)
 
 > Drive a real browser through the Chrome DevTools Protocol when the official
