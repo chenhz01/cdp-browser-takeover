@@ -83,6 +83,15 @@ gh api graphql -f query='{ user(login:"YOU") { pinnedItems(first:6, types:REPOSI
 
 `totalCount` is the truth; the page is the mood.
 
+## Trap 5: CDP can be ready before the first tab
+
+On headed macOS Chrome, `/json/version` can answer before the initial
+`about:blank` page appears in `/json/list`. A successful endpoint probe does
+not mean a page matching `--url` already exists. Screenshot tests create a
+dedicated page with `PUT /json/new?<encoded URL>` and wait for that target's
+URL to appear before capturing it. A missing target is reported as an error,
+without replacing the output file.
+
 ## Bonus: hard numbers are testable claims
 
 When publishing anything, don't write "30+ checks pass". Run the counter,

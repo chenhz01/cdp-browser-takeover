@@ -27,7 +27,7 @@ if (!args.http || !args.eval) {
   process.exit(2);
 }
 if (typeof WebSocket === 'undefined') {
-  console.error('global WebSocket missing — needs Node >= 21 (this is the one stdlib-only script with a floor above 18)');
+  console.error('global WebSocket missing — raw CDP tools need Node >= 21');
   process.exit(2);
 }
 

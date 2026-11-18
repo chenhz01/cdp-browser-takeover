@@ -49,6 +49,13 @@ This toolkit is the distilled escape path:
 4. **Evaluate JS in any tab with zero dependencies** — `bin/cdp_eval.mjs`
    speaks raw CDP over the Node global WebSocket (needs Node ≥ 21).
    `--new` opens a fresh tab; `--url <substring>` targets an existing one.
+5. **Capture a tab as PNG with zero dependencies** — `bin/cdp_shot.mjs`
+   uses `Page.captureScreenshot` over the same raw WebSocket (Node ≥ 21).
+   `--url <substring>` selects a page; without it, the first page is captured.
+   `--out <path>` is required and receives a viewport PNG, replacing that file
+   on success. Headless and headed browsers are supported. Success prints
+   JSON `{ ok, target, out, bytes }`; failures exit 1, and missing arguments
+   or a missing global WebSocket exit 2.
 
 Every trap discovered along the way — daemon death, IPv6-vs-IPv4 loopback
 squatting, GitHub's custom `<dialog class="Overlay">` modals, and
@@ -74,6 +81,9 @@ node bin/github_pins.mjs --http http://[::1]:9333 --user <login> --unpin repo-a
 
 # 3c. evaluate JS in a tab — no playwright, pure stdlib (Node >= 21)
 node bin/cdp_eval.mjs --http http://[::1]:9333 --url github.com --eval "document.title"
+
+# 3d. save a viewport PNG — no playwright, pure stdlib (Node >= 21)
+node bin/cdp_shot.mjs --http http://[::1]:9333 --url github.com --out shot.png
 
 # 4. VERIFY — always, via the API, never via page text
 gh api graphql -f query='{ user(login:"<login>") { pinnedItems(first:6, types:REPOSITORY) { totalCount nodes { ... on Repository { name } } } } }'
